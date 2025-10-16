@@ -126,7 +126,7 @@ export default function ServicesPage() {
             <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
               Découvrez notre gamme complète de services en électricité, bâtiment et froid pour tous vos projets à Bouaké
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
               <Link href="/signaler">
                 <Button 
                   size="lg" 
@@ -225,7 +225,7 @@ export default function ServicesPage() {
             <p className="text-xl mb-8 opacity-90">
               Nos experts sont disponibles 24/7 pour vous accompagner dans tous vos projets électriques, de bâtiment et de froid.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
               <Link href="/signaler">
                 <Button 
                   size="lg" 

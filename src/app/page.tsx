@@ -3,12 +3,11 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
 import { Zap, Shield, Clock, Users, Star, ArrowRight, X } from "lucide-react";
+import SearchParamsHandler from "@/components/SearchParamsHandler";
 
 export default function Home() {
-  const searchParams = useSearchParams();
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [reviews, setReviews] = useState([
     { id: 1, name: "Kouassi A.", rating: 5, comment: "Service excellent et rapide!", date: "2025-01-15" },
@@ -66,13 +65,12 @@ export default function Home() {
     return () => clearInterval(reviewInterval);
   }, [reviews.length]);
 
-  // Check for contact modal parameter in URL
-  useEffect(() => {
-    const contactParam = searchParams.get('contact');
-    if (contactParam === 'true') {
+  // Function to handle contact modal parameter
+  const handleContactParam = (hasContact: boolean) => {
+    if (hasContact) {
       setShowContactModal(true);
     }
-  }, [searchParams]);
+  };
 
   // Calculate average rating
   const averageRating = reviews.length > 0 
@@ -117,6 +115,9 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 overflow-hidden flex flex-col">
+      <Suspense fallback={<div>Chargement...</div>}>
+        <SearchParamsHandler onContactParam={handleContactParam} />
+      </Suspense>
       
       {/* Animated Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -143,28 +144,18 @@ export default function Home() {
                 />
               </div>
               <div className="ml-4">
-                <div className="flex items-center">
-                  <h1 className="text-2xl font-bold text-blue-900 transform transition-all duration-300 hover:scale-105">
-                    EBF Bouaké
-                  </h1>
-                  <div className="ml-4">
-                    <Link href="/services">
-                      <Button 
-                        variant="outline" 
-                        className="px-3 py-2 text-xs rounded-lg border border-blue-500 text-blue-600 hover:bg-blue-600 hover:text-white hover:border-blue-600 font-semibold flex items-center justify-center leading-none h-fit transform transition-all duration-300 hover:scale-105"
-                      >
-                        <span className="mb-[-2px] hidden sm:inline">Nos </span>
-                        <span className="mt-[-2px]">services</span>
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
+                <h1 className="text-2xl font-bold text-blue-900 transform transition-all duration-300 hover:scale-105">
+                  EBF Bouaké
+                </h1>
                 <p className="text-sm text-gray-600 mt-1">Électricité • Bâtiment • Froid</p>
               </div>
             </div>
             <nav className="flex space-x-6">
               <Link href="#about" className="hidden md:flex text-gray-700 hover:text-blue-600 transition-all duration-300 hover:scale-105 transform">
                 À propos
+              </Link>
+              <Link href="/services" className="hidden md:flex text-gray-700 hover:text-blue-600 transition-all duration-300 hover:scale-105 transform">
+                Nos services
               </Link>
               <Link href="#footer-contact" className="hidden md:flex text-gray-700 hover:text-blue-600 transition-all duration-300 hover:scale-105 transform">
                 Contact
@@ -175,15 +166,11 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-6 sm:py-12">
+      <section className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-2 sm:py-4">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
           <div className={`space-y-6 sm:space-y-8 transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
             <div className="space-y-2 sm:space-y-4 text-center sm:text-left">
-              <div className="hidden sm:inline-flex items-center space-x-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium transform transition-all duration-300 hover:scale-105">
-                <Zap className="w-4 h-4" />
-                <span>24/7 Disponible</span>
-              </div>
               <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold text-gray-900 leading-tight">
                 💡 Problème d&apos;électricité à Bouaké ?
               </h2>
@@ -214,7 +201,7 @@ export default function Home() {
               <Link href="/signaler">
                 <Button 
                   size="lg" 
-                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-base px-4 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl group transform transition-all duration-300 hover:scale-110 animate-bounce"
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-base px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl group transform transition-all duration-300 hover:scale-110 animate-bounce"
                 >
                   <span className="flex items-center text-base">
                     Signaler mon problème 
@@ -223,18 +210,18 @@ export default function Home() {
                 </Button>
               </Link>
               <button 
-                onClick={openContactModal}
-                className="text-sm px-3 py-2 rounded-full font-medium border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white bg-transparent hover:bg-blue-600 transition-all duration-300 cursor-pointer flex items-center transform hover:scale-105"
-              >
-                Nous contacter
-                <ArrowRight className="w-3 h-3 ml-2" />
-              </button>
-              <button 
                 onClick={openReviewModal}
-                className="text-sm px-3 py-2 rounded-full font-medium border-2 border-yellow-500 text-yellow-600 hover:bg-yellow-500 hover:text-white bg-transparent hover:bg-yellow-500 transition-all duration-300 cursor-pointer flex items-center transform hover:scale-105"
+                className="text-base px-6 py-2 rounded-full font-semibold border-2 border-yellow-500 text-yellow-600 hover:bg-yellow-500 hover:text-white bg-transparent hover:bg-yellow-500 transition-all duration-300 cursor-pointer flex items-center transform hover:scale-105"
               >
                   Donner votre avis
-                  <Star className="w-3 h-3 ml-2" />
+                  <Star className="w-4 h-4 ml-2" />
+              </button>
+              <button 
+                onClick={openContactModal}
+                className="text-base px-6 py-2 rounded-full font-semibold border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white bg-transparent hover:bg-blue-600 transition-all duration-300 cursor-pointer flex items-center transform hover:scale-105"
+              >
+                Nous contacter
+                <ArrowRight className="w-4 h-4 ml-2" />
               </button>
             </div>
           </div>
@@ -330,54 +317,6 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Services Section */}
-      <section id="services" className="relative z-10 py-20 bg-white hidden md:block">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Nos Services</h2>
-            <p className="text-xl text-gray-600">Des solutions complètes pour tous vos besoins électriques</p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: <Zap className="w-12 h-12" />,
-                title: "Dépannage d'urgence",
-                description: "Intervention rapide 24/7 pour tous vos problèmes électriques urgents",
-                color: "text-red-600"
-              },
-              {
-                icon: <Shield className="w-12 h-12" />,
-                title: "Installation",
-                description: "Installation professionnelle d'équipements électriques neufs",
-                color: "text-blue-600"
-              },
-              {
-                icon: <Star className="w-12 h-12" />,
-                title: "Maintenance",
-                description: "Contrôle et entretien régulier de vos installations électriques",
-                color: "text-green-600"
-              }
-            ].map((service, index) => (
-              <div 
-                key={index}
-                className="group p-8 bg-gray-50 rounded-2xl hover:bg-white hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-gray-100"
-              >
-                <div className={`${service.color} mb-6 transform group-hover:scale-110 transition-transform duration-300`}>
-                  {service.icon}
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors">
-                  {service.title}
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  {service.description}
-                </p>
-              </div>
-            ))}
           </div>
         </div>
       </section>
