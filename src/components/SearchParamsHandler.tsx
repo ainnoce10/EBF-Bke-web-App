@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function SearchParamsHandler({ 
+function SearchParamsHandlerContent({ 
   onContactParam 
 }: { 
   onContactParam: (hasContact: boolean) => void 
@@ -16,4 +17,16 @@ export default function SearchParamsHandler({
   }, [searchParams, onContactParam]);
 
   return null;
+}
+
+export default function SearchParamsHandler({ 
+  onContactParam 
+}: { 
+  onContactParam: (hasContact: boolean) => void 
+}) {
+  return (
+    <Suspense fallback={null}>
+      <SearchParamsHandlerContent onContactParam={onContactParam} />
+    </Suspense>
+  );
 }

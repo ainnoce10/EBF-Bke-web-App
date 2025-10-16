@@ -174,7 +174,7 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-2 sm:py-4">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left Content */}
           <div className={`space-y-6 sm:space-y-8 transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
             <div className="space-y-2 sm:space-y-4 text-center sm:text-left">
@@ -216,31 +216,26 @@ export default function Home() {
                   </span>
                 </Button>
               </Link>
-              <button 
-                onClick={openReviewModal}
-                className="text-base px-6 py-2 rounded-full font-semibold border-2 border-yellow-500 text-yellow-600 hover:bg-yellow-500 hover:text-white bg-transparent hover:bg-yellow-500 transition-all duration-300 cursor-pointer flex items-center transform hover:scale-105"
-              >
-                  Donner votre avis
-                  <Star className="w-4 h-4 ml-2" />
-              </button>
-              <button 
+              <Button 
                 onClick={openContactModal}
-                className="text-base px-6 py-2 rounded-full font-semibold border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white bg-transparent hover:bg-blue-600 transition-all duration-300 cursor-pointer flex items-center transform hover:scale-105"
+                size="lg"
+                variant="outline"
+                className="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white bg-transparent hover:bg-blue-600 transition-all duration-300 cursor-pointer flex items-center transform hover:scale-105 rounded-full lg:rounded-full"
               >
                 Nous contacter
                 <ArrowRight className="w-4 h-4 ml-2" />
-              </button>
+              </Button>
             </div>
           </div>
 
           {/* Right Content - Hero Image */}
           <div className={`transform transition-all duration-1000 delay-700 ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-20 opacity-0'}`}>
-            <div className="relative w-full h-96 md:h-[500px] rounded-2xl overflow-hidden shadow-2xl transform transition-all duration-300 hover:scale-105">
+            <div className="relative w-full h-96 md:h-[500px] lg:w-4/5 lg:mx-auto rounded-2xl overflow-hidden shadow-2xl transform transition-all duration-300 hover:scale-105">
               <Image
                 src="/uploads/photos/electricien-new.jpg"
                 alt="Électricien professionnel EBF Bouaké"
                 fill
-                className="object-cover"
+                className="lg:object-contain object-cover"
                 priority
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 quality={75}
@@ -293,8 +288,19 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Review Button moved near the image for PC */}
+            <div className="hidden lg:block mt-4 text-center">
+              <button 
+                onClick={openReviewModal}
+                className="text-base px-6 py-3 rounded-full font-semibold border-2 border-yellow-500 text-yellow-600 hover:bg-yellow-500 hover:text-white bg-transparent hover:bg-yellow-500 transition-all duration-300 cursor-pointer flex items-center mx-auto transform hover:scale-105"
+              >
+                  Donner votre avis
+                  <Star className="w-4 h-4 ml-2" />
+              </button>
+            </div>
+
             {/* Features Grid - After Image */}
-            <div className="mt-6 grid grid-cols-2 gap-3 transform transition-all duration-1000 delay-1000">
+            <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4 transform transition-all duration-1000 delay-1000">
               <div className="flex items-center space-x-2 p-3 bg-white rounded-lg shadow-md hover:shadow-lg transform transition-all duration-300 hover:scale-105 hover:-translate-y-1">
                 <Shield className="w-6 h-6 text-green-600 transform transition-all duration-300 hover:scale-110" />
                 <div>
