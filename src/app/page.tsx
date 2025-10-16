@@ -115,9 +115,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 overflow-hidden flex flex-col">
-      <Suspense fallback={<div>Chargement...</div>}>
-        <SearchParamsHandler onContactParam={handleContactParam} />
-      </Suspense>
+      <SearchParamsHandler onContactParam={handleContactParam} />
       
       {/* Animated Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -144,9 +142,16 @@ export default function Home() {
                 />
               </div>
               <div className="ml-4">
-                <h1 className="text-2xl font-bold text-blue-900 transform transition-all duration-300 hover:scale-105">
-                  EBF Bouaké
-                </h1>
+                <div className="flex items-center gap-2">
+                  <Link href="/services" className="md:hidden text-gray-700 hover:text-blue-600 transition-all duration-300 hover:scale-105 transform">
+                    <Button variant="outline" size="sm" className="text-xs px-2 py-1 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white">
+                      Services
+                    </Button>
+                  </Link>
+                  <h1 className="text-2xl font-bold text-blue-900 transform transition-all duration-300 hover:scale-105">
+                    EBF Bouaké
+                  </h1>
+                </div>
                 <p className="text-sm text-gray-600 mt-1">Électricité • Bâtiment • Froid</p>
               </div>
             </div>
