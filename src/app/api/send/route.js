@@ -1,54 +1,65 @@
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
 
-// Initialisez Resend avec la clé API
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(request) {
-  try {
-    const { name, email, message } = await request.json();
+  // Vérifiez que la clé API est présente
+  if (!process.env.RESEND_API_KEY) {
+    console.error('RESEND_API_KEY manquante');
+    return NextResponse.json(
+      { error: 'Configuration serveur manquante' },
+      { status: 500 }
+    );
+  }
 
-    // Validation des données
-    if (!name || !email || !message) {
+  const resend = new Resend(process.env.RESEND_API_KEY);
+
+  try {
+    const body = await request.json();
+    const { name, email, message } = body;
+
+    // Validation
+    if (!name?.trim() || !email?.trim() || !message?.trim()) {
       return NextResponse.json(
         { error: 'Tous les champs sont requis' },
         { status: 400 }
       );
     }
 
-    // Envoi de l'email
     const { data, error } = await resend.emails.send({
-      from: 'onboarding@resend.dev', // Email vérifié dans Resend
-      to: 'ebfbouake@gmail.com', // Remplacez par votre email
-      subject: `Nouveau message de ${name}`,
+      from: 'onboarding@resend.dev',
+      to: 'votre-email@gmail.com', // ← Remplacez par votre email
+      reply_to: email,
+      subject: `Nouveau message de ${name.trim()}`,
+      text: `Nom: ${name}\nEmail: ${email}\nMessage: ${message}`,
       html: `
-        <h3>Nouveau message de contact</h3>
-        <p><strong>Nom:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Message:</strong></p>
-        <p>${message}</p>
-        <hr>
-        <p><small>Envoyé depuis votre site Next.js</small></p>
+        <div>
+          <h2>Nouveau message de contact</h2>
+          <p><strong>Nom:</strong> ${name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Message:</strong></p>
+          <p>${message.replace(/\n/g, '<br>')}</p>
+        </div>
       `,
     });
 
     if (error) {
       console.error('Erreur Resend:', error);
       return NextResponse.json(
-        { error: 'Erreur lors de l\'envoi de l\'email' },
+        { error: 'Échec de l\'envoi de l\'email' },
         { status: 500 }
       );
     }
 
-    return NextResponse.json(
-      { message: 'Email envoyé avec succès', data },
-      { status: 200 }
-    );
+    console.log('Email envoyé avec succès:', data);
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Message envoyé avec succès' 
+    });
 
   } catch (error) {
-    console.error('Erreur serveur:', error);
+    console.error('Erreur:', error);
     return NextResponse.json(
-      { error: 'Erreur interne du serveur' },
+      { error: 'Erreur de traitement de la requête' },
       { status: 500 }
     );
   }
