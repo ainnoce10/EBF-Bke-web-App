@@ -266,6 +266,33 @@ export default function SignalerPage() {
         const result = await response.json();
         console.log('✅ Succès:', result);
         
+
+      // 🔹 Envoi de l'email via Resend
+      try {
+        const resendResponse = await fetch("/api/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            email: "ebfbouake@gmail.com",
+            message: inputType === "text" ? description : "Message vocal / photo joint",
+          }),
+        });
+
+        const resendResult = await resendResponse.json();
+        if (!resendResult.success) {
+          console.warn("⚠️ Email Resend non envoyé:", resendResult.error);
+        } else {
+          console.log("📧 Email Resend envoyé avec succès !");
+        }
+      }
+
+catch (emailError) {
+        console.error("❌ Erreur lors de l'envoi de l'email Resend:", emailError);
+      }
+
+     
+
         // Vérifier si la notification par email a été envoyée avec succès
         if (result.success && result.notification) {
           console.log('📧 Email envoyé avec succès');
@@ -282,7 +309,9 @@ export default function SignalerPage() {
             router.push("/confirmation");
           }
         }
-      } else {
+      } 
+      
+      else {
         const errorData = await response.json();
         console.error('❌ Erreur API:', errorData);
         setFormError(errorData.error || 'Une erreur est survenue. Veuillez réessayer.');
