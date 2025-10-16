@@ -1,4 +1,25 @@
- 'use client';
+"use client";
+
+import { Suspense } from "react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={<div>Chargement...</div>}>
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <h1 className="text-3xl font-bold mb-6">Bienvenue sur EBF</h1>
+        <p className="text-center max-w-md mb-8">
+          Plateforme gratuite pour enregistrer vos problèmes d’électricité, audio ou texte.
+        </p>
+        <Link href="/enregistrement">
+          <Button>Commencer</Button>
+        </Link>
+      </div>
+    </Suspense>
+  );
+}
+
 
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
