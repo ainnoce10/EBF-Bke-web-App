@@ -1,65 +1,69 @@
-import { Resend } from 'resend';
+// app/api/send/route.js ou pages/api/send.js
 import { NextResponse } from 'next/server';
 
 export async function POST(request) {
-  // Vérifiez que la clé API est présente
-  if (!process.env.RESEND_API_KEY) {
-    console.error('RESEND_API_KEY manquante');
-    return NextResponse.json(
-      { error: 'Configuration serveur manquante' },
-      { status: 500 }
-    );
-  }
-
-  const resend = new Resend(process.env.RESEND_API_KEY);
-
   try {
-    const body = await request.json();
-    const { name, email, message } = body;
+    const { nom, telephone, quartier, position, mapsLink, autoriseContact } = await request.json();
+    
+    console.log('Données reçues:', { nom, telephone, quartier, position });
 
-    // Validation
-    if (!name?.trim() || !email?.trim() || !message?.trim()) {
+    // Validation des champs requis
+    if (!nom || !telephone) {
       return NextResponse.json(
-        { error: 'Tous les champs sont requis' },
+        { error: 'Le nom et le téléphone sont requis' },
         { status: 400 }
       );
     }
 
-    const { data, error } = await resend.emails.send({
-      from: 'onboarding@resend.dev',
-      to: 'ebfbouake@gmail.com', // ← Remplacez par votre email
-      reply_to: email,
-      subject: `Nouveau message de ${name.trim()}`,
-      text: `Nom: ${name}\nEmail: ${email}\nMessage: ${message}`,
-      html: `
-        <div>
-          <h2>Nouveau message de contact</h2>
-          <p><strong>Nom:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Message:</strong></p>
-          <p>${message.replace(/\n/g, '<br>')}</p>
-        </div>
-      `,
+    // Envoi d'email avec Resend
+    const resendResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: 'onboarding@resend.dev',
+        to: process.env.GMAIL_USER || 'votre-email@gmail.com',
+        subject: `Nouvelle demande EBF - ${nom}`,
+        html: `
+          <h2>Nouvelle demande de diagnostic EBF</h2>
+          <p><strong>Nom complet:</strong> ${nom}</p>
+          <p><strong>Téléphone:</strong> ${telephone}</p>
+          <p><strong>Quartier:</strong> ${quartier || 'Non spécifié'}</p>
+          <p><strong>Position:</strong> ${position || 'Non spécifié'}</p>
+          <p><strong>Lien Google Maps:</strong> <a href="${mapsLink}">${mapsLink}</a></p>
+          <p><strong>Autorise contact:</strong> ${autoriseContact ? 'Oui' : 'Non'}</p>
+          <hr>
+          <p><em>Reçu depuis l'application EBF Bouaké</em></p>
+        `,
+      }),
     });
 
-    if (error) {
-      console.error('Erreur Resend:', error);
-      return NextResponse.json(
-        { error: 'Échec de l\'envoi de l\'email' },
-        { status: 500 }
-      );
+    if (!resendResponse.ok) {
+      const errorData = await resendResponse.text();
+      console.error('Erreur Resend:', errorData);
+      throw new Error('Erreur lors de l\'envoi de l\'email');
     }
 
-    console.log('Email envoyé avec succès:', data);
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Message envoyé avec succès' 
-    });
+    const emailData = await resendResponse.json();
+    console.log('Email envoyé avec succès:', emailData);
+
+    return NextResponse.json(
+      { 
+        success: true,
+        message: 'Demande envoyée avec succès ! Nous vous contacterons rapidement.' 
+      },
+      { status: 200 }
+    );
 
   } catch (error) {
-    console.error('Erreur:', error);
+    console.error('Erreur complète:', error);
     return NextResponse.json(
-      { error: 'Erreur de traitement de la requête' },
+      { 
+        error: 'Erreur lors de la création de la demande',
+        details: error.message 
+      },
       { status: 500 }
     );
   }
