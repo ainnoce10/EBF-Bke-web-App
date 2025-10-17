@@ -68,7 +68,7 @@ ${body.mapsLink || 'Non fourni'}
         },
         body: JSON.stringify({
           from: 'onboarding@resend.dev',
-          to: process.env.GMAIL_USER || 'votre-email@gmail.com',
+          to: process.env.GMAIL_USER || 'ebfbouake@gmail.com',
           subject: `🔌 Nouvelle demande EBF - ${body.name}`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
