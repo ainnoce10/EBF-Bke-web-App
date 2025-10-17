@@ -4,8 +4,27 @@ export async function POST(request: Request) {
   try {
     console.log('📥 API Requests called');
     
-    const body = await request.json();
-    console.log('📦 Request body:', body);
+    // Essayer de parser le JSON
+    let body;
+    try {
+      body = await request.json();
+      console.log('📦 Request body (JSON):', body);
+    } catch (jsonError) {
+      console.log('❌ JSON parsing failed, trying FormData...');
+      
+      // Si le JSON échoue, essayer FormData
+      const formData = await request.formData();
+      body = {
+        name: formData.get('name'),
+        phone: formData.get('phone'),
+        neighborhood: formData.get('neighborhood'),
+        position: formData.get('position'),
+        inputType: formData.get('inputType'),
+        description: formData.get('description'),
+        authorized: formData.get('authorized') === 'true'
+      };
+      console.log('📦 Request body (FormData):', body);
+    }
 
     // Validation basique
     if (!body.name || !body.phone) {
@@ -15,7 +34,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Simuler un enregistrement réussi sans base de données
     console.log('💾 Enregistrement simulé (sans DB)');
     
     // 🔹 ENVOI DE L'EMAIL IMMÉDIAT
@@ -75,7 +93,8 @@ ${body.mapsLink || 'Non fourni'}
       });
 
       if (emailResponse.ok) {
-        console.log('✅ Email envoyé avec succès');
+        const emailResult = await emailResponse.json();
+        console.log('✅ Email envoyé avec succès:', emailResult);
       } else {
         const emailError = await emailResponse.text();
         console.error('❌ Erreur email:', emailError);
