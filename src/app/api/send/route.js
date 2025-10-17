@@ -24,7 +24,7 @@ export async function POST(request) {
       },
       body: JSON.stringify({
         from: 'onboarding@resend.dev',
-        to: process.env.GMAIL_USER || 'votre-email@gmail.com',
+        to: process.env.GMAIL_USER || 'ebfbouake@gmail.com',
         subject: `Nouvelle demande EBF - ${nom}`,
         html: `
           <h2>Nouvelle demande de diagnostic EBF</h2>
