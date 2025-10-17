@@ -314,7 +314,7 @@ ${emailData.mapsLink}
             }),
           });
 
-          const resendResult = await resendResult.json();
+          const resendResult = await resendResponse.json();
           
           if (resendResult.success) {
             console.log("📧 Email de notification envoyé avec succès !");
@@ -768,7 +768,7 @@ ${emailData.mapsLink}
                   <>
                     Envoyer ma demande 📤
                     <Shield className="w-5 h-5 ml-2 group-hover:rotate-12 transition-transform" />
-                  </
+                  </>
                 )}
               </Button>
               
