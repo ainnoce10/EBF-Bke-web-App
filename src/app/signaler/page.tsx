@@ -176,6 +176,9 @@ export default function SignalerPage() {
         setMapsLink(googleMapsLink);
         setLocationSuccess("✅ Position ajoutée avec succès !");
         setLocationLoading(false);
+        
+        // Le message de succès reste maintenant affiché jusqu'à l'actualisation de la page
+        // Plus de setTimeout pour effacer le message
       },
       (error) => {
         setLocationLoading(false);
@@ -251,7 +254,7 @@ export default function SignalerPage() {
         formData.append("photo", photoInput.files[0]);
       }
 
-      console.log('📡 Appel API /api/requests...');
+      console.log('📡 Appel API...');
       const response = await fetch("/api/requests", {
         method: "POST",
         body: formData,
@@ -261,77 +264,54 @@ export default function SignalerPage() {
 
       if (response.ok) {
         const result = await response.json();
-        console.log('✅ Demande enregistrée:', result);
-
-        // 🔹 ENVOI DE L'EMAIL AVEC RESEND
-        try {
-          console.log('📧 Envoi de l\'email de notification...');
-          
-          const emailMessage = inputType === "text" 
-            ? description 
-            : `Message vocal - Client: ${name}, Téléphone: ${phone}`;
-
-          const emailData = {
-            name: name,
-            phone: phone,
-            neighborhood: neighborhood || 'Non spécifié',
-            position: position || 'Non spécifié',
-            problemType: inputType === "text" ? "Description écrite" : "Message vocal",
-            message: emailMessage,
-            mapsLink: mapsLink || 'Non fourni',
-            authorized: authorized ? "Oui" : "Non"
-          };
-
-          const emailText = `
-Nouvelle demande de diagnostic EBF
-
-👤 Informations client:
-- Nom: ${emailData.name}
-- Téléphone: ${emailData.phone}
-- Quartier: ${emailData.neighborhood}
-- Position: ${emailData.position}
-
-🔧 Description du problème:
-${emailData.message}
-
-📍 Localisation:
-${emailData.mapsLink}
-
-✅ Autorisation de contact: ${emailData.authorized}
-
-📅 Date: ${new Date().toLocaleString()}
-          `.trim();
-
-          const resendResponse = await fetch("/api/send", {
-            method: "POST",
-            headers: { 
-              "Content-Type": "application/json" 
-            },
-            body: JSON.stringify({
-              name: emailData.name,
-              email: "notification@ebfbouake.com",
-              message: emailText
-            }),
-          });
-
-          const resendResult = await resendResult.json();
-          
-          if (resendResult.success) {
-            console.log("📧 Email de notification envoyé avec succès !");
-          } else {
-            console.warn("⚠️ Email de notification non envoyé:", resendResult.error);
-            // Continuer même si l'email échoue
-          }
-        } catch (emailError) {
-          console.error("❌ Erreur lors de l'envoi de l'email:", emailError);
-          // Continuer même en cas d'erreur d'email
-        }
-
-        // Rediriger vers la page de confirmation
-        console.log('🔄 Redirection vers la page de confirmation...');
-        router.push("/confirmation");
+        console.log('✅ Succès:', result);
         
-      } else {
+
+      // 🔹 Envoi de l'email via Resend
+      try {
+        const resendResponse = await fetch("/api/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            email: "ebfbouake@gmail.com",
+            message: inputType === "text" ? description : "Message vocal / photo joint",
+          }),
+        });
+
+        const resendResult = await resendResponse.json();
+        if (!resendResult.success) {
+          console.warn("⚠️ Email Resend non envoyé:", resendResult.error);
+        } else {
+          console.log("📧 Email Resend envoyé avec succès !");
+        }
+      }
+
+catch (emailError) {
+        console.error("❌ Erreur lors de l'envoi de l'email Resend:", emailError);
+      }
+
+     
+
+        // Vérifier si la notification par email a été envoyée avec succès
+        if (result.success && result.notification) {
+          console.log('📧 Email envoyé avec succès');
+          // Rediriger directement vers la page de confirmation
+          router.push("/confirmation");
+        } else {
+          // Vérifier s'il y a une erreur de notification
+          if (result.notification && result.notification.error) {
+            console.error('❌ Erreur de notification:', result.notification.error);
+            setFormError("La demande a été enregistrée mais l'email de notification n'a pas pu être envoyé. Veuillez contacter l'administrateur.");
+          } else {
+            // Rediriger vers confirmation même si la notification a échoué
+            console.log('✅ Demande enregistrée avec succès');
+            router.push("/confirmation");
+          }
+        }
+      } 
+      
+      else {
         const errorData = await response.json();
         console.error('❌ Erreur API:', errorData);
         setFormError(errorData.error || 'Une erreur est survenue. Veuillez réessayer.');
@@ -768,7 +748,7 @@ ${emailData.mapsLink}
                   <>
                     Envoyer ma demande 📤
                     <Shield className="w-5 h-5 ml-2 group-hover:rotate-12 transition-transform" />
-                  </
+                  </>
                 )}
               </Button>
               
