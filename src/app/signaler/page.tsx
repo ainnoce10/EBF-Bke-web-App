@@ -302,47 +302,87 @@ ${emailData.mapsLink}
 📅 Date: ${new Date().toLocaleString()}
           `.trim();
 
-          const resendResponse = await fetch("/api/send", {
-            method: "POST",
-            headers: { 
-              "Content-Type": "application/json" 
-            },
-            body: JSON.stringify({
-              name: emailData.name,
-              email: "notification@ebfbouake.com",
-              message: emailText
-            }),
-          });
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  // Réinitialiser les erreurs
+  setFormError(null);
+  
+  // Validation basique
+  if (!name.trim()) {
+    setFormError("Veuillez fournir votre nom");
+    return;
+  }
 
-          const resendResult = await resendResponse.json();
-          
-          if (resendResult.success) {
-            console.log("📧 Email de notification envoyé avec succès !");
-          } else {
-            console.warn("⚠️ Email de notification non envoyé:", resendResult.error);
-            // Continuer même si l'email échoue
-          }
-        } catch (emailError) {
-          console.error("❌ Erreur lors de l'envoi de l'email:", emailError);
-          // Continuer même en cas d'erreur d'email
-        }
+  if (!phone.trim()) {
+    setFormError("Veuillez fournir votre numéro de téléphone");
+    return;
+  }
 
-        // Rediriger vers la page de confirmation
-        console.log('🔄 Redirection vers la page de confirmation...');
-        router.push("/confirmation");
-        
-      } else {
-        const errorData = await response.json();
-        console.error('❌ Erreur API:', errorData);
-        setFormError(errorData.error || 'Une erreur est survenue. Veuillez réessayer.');
-      }
-    } catch (error) {
-      console.error('❌ Erreur réseau:', error);
-      setFormError("Une erreur de réseau est survenue. Veuillez vérifier votre connexion et réessayer.");
-    } finally {
-      setIsSubmitting(false);
+  if (!authorized) {
+    setFormError("Veuillez autoriser EBF à vous recontacter");
+    return;
+  }
+
+  if (inputType === "text" && !description.trim()) {
+    setFormError("Veuillez décrire votre problème");
+    return;
+  }
+
+  if (inputType === "audio" && !audioBlob) {
+    setFormError("Veuillez enregistrer un message vocal");
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  try {
+    console.log('📤 Envoi de la demande...');
+    
+    // Préparer les données en JSON
+    const requestData = {
+      name,
+      phone,
+      neighborhood,
+      position,
+      inputType,
+      description: inputType === "text" ? description : "Message vocal",
+      authorized,
+      mapsLink
+    };
+
+    console.log('📦 Données envoyées:', requestData);
+
+    // Appel API avec JSON
+    const response = await fetch("/api/requests", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestData),
+    });
+
+    console.log('📡 Statut de la réponse:', response.status);
+
+    if (response.ok) {
+      const result = await response.json();
+      console.log('✅ Réponse API:', result);
+
+      // Rediriger vers la confirmation
+      router.push("/confirmation");
+      
+    } else {
+      const errorData = await response.json();
+      console.error('❌ Erreur API détaillée:', errorData);
+      setFormError(errorData.error || 'Erreur lors de la création de la demande');
     }
-  };
+  } catch (error) {
+    console.error('❌ Erreur réseau:', error);
+    setFormError("Erreur de connexion. Veuillez réessayer.");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 overflow-hidden">
