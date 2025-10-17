@@ -232,157 +232,51 @@ export default function SignalerPage() {
 
     try {
       console.log('📤 Envoi de la demande...');
-      const formData = new FormData();
-      formData.append("name", name);
-      formData.append("phone", phone);
-      formData.append("neighborhood", neighborhood);
-      formData.append("position", position);
-      formData.append("inputType", inputType);
       
-      if (inputType === "text") {
-        formData.append("description", description);
-      } else if (audioBlob) {
-        formData.append("audio", audioBlob, "recording.wav");
-      }
+      // Préparer les données en JSON
+      const requestData = {
+        name,
+        phone,
+        neighborhood,
+        position,
+        inputType,
+        description: inputType === "text" ? description : "Message vocal",
+        authorized,
+        mapsLink
+      };
 
-      // Ajouter la photo si elle existe
-      const photoInput = document.getElementById('photo') as HTMLInputElement;
-      if (photoInput && photoInput.files && photoInput.files[0]) {
-        formData.append("photo", photoInput.files[0]);
-      }
+      console.log('📦 Données envoyées:', requestData);
 
-      console.log('📡 Appel API /api/requests...');
+      // Appel API avec JSON
       const response = await fetch("/api/requests", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
       });
 
-      console.log('📡 Réponse reçue:', response.status);
+      console.log('📡 Statut de la réponse:', response.status);
 
       if (response.ok) {
         const result = await response.json();
-        console.log('✅ Demande enregistrée:', result);
+        console.log('✅ Réponse API:', result);
 
-        // 🔹 ENVOI DE L'EMAIL AVEC RESEND
-        try {
-          console.log('📧 Envoi de l\'email de notification...');
-          
-          const emailMessage = inputType === "text" 
-            ? description 
-            : `Message vocal - Client: ${name}, Téléphone: ${phone}`;
-
-          const emailData = {
-            name: name,
-            phone: phone,
-            neighborhood: neighborhood || 'Non spécifié',
-            position: position || 'Non spécifié',
-            problemType: inputType === "text" ? "Description écrite" : "Message vocal",
-            message: emailMessage,
-            mapsLink: mapsLink || 'Non fourni',
-            authorized: authorized ? "Oui" : "Non"
-          };
-
-          const emailText = `
-Nouvelle demande de diagnostic EBF
-
-👤 Informations client:
-- Nom: ${emailData.name}
-- Téléphone: ${emailData.phone}
-- Quartier: ${emailData.neighborhood}
-- Position: ${emailData.position}
-
-🔧 Description du problème:
-${emailData.message}
-
-📍 Localisation:
-${emailData.mapsLink}
-
-✅ Autorisation de contact: ${emailData.authorized}
-
-📅 Date: ${new Date().toLocaleString()}
-          `.trim();
-
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  
-  // Réinitialiser les erreurs
-  setFormError(null);
-  
-  // Validation basique
-  if (!name.trim()) {
-    setFormError("Veuillez fournir votre nom");
-    return;
-  }
-
-  if (!phone.trim()) {
-    setFormError("Veuillez fournir votre numéro de téléphone");
-    return;
-  }
-
-  if (!authorized) {
-    setFormError("Veuillez autoriser EBF à vous recontacter");
-    return;
-  }
-
-  if (inputType === "text" && !description.trim()) {
-    setFormError("Veuillez décrire votre problème");
-    return;
-  }
-
-  if (inputType === "audio" && !audioBlob) {
-    setFormError("Veuillez enregistrer un message vocal");
-    return;
-  }
-
-  setIsSubmitting(true);
-
-  try {
-    console.log('📤 Envoi de la demande...');
-    
-    // Préparer les données en JSON
-    const requestData = {
-      name,
-      phone,
-      neighborhood,
-      position,
-      inputType,
-      description: inputType === "text" ? description : "Message vocal",
-      authorized,
-      mapsLink
-    };
-
-    console.log('📦 Données envoyées:', requestData);
-
-    // Appel API avec JSON
-    const response = await fetch("/api/requests", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestData),
-    });
-
-    console.log('📡 Statut de la réponse:', response.status);
-
-    if (response.ok) {
-      const result = await response.json();
-      console.log('✅ Réponse API:', result);
-
-      // Rediriger vers la confirmation
-      router.push("/confirmation");
-      
-    } else {
-      const errorData = await response.json();
-      console.error('❌ Erreur API détaillée:', errorData);
-      setFormError(errorData.error || 'Erreur lors de la création de la demande');
+        // Rediriger vers la confirmation
+        router.push("/confirmation");
+        
+      } else {
+        const errorData = await response.json();
+        console.error('❌ Erreur API détaillée:', errorData);
+        setFormError(errorData.error || 'Erreur lors de la création de la demande');
+      }
+    } catch (error) {
+      console.error('❌ Erreur réseau:', error);
+      setFormError("Erreur de connexion. Veuillez réessayer.");
+    } finally {
+      setIsSubmitting(false);
     }
-  } catch (error) {
-    console.error('❌ Erreur réseau:', error);
-    setFormError("Erreur de connexion. Veuillez réessayer.");
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+  };
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 overflow-hidden">
